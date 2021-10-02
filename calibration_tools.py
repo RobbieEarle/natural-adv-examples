@@ -1,5 +1,6 @@
 import numpy as np
 import sklearn.metrics as sk
+from sklearn.utils.extmath import stable_cumsum
 recall_level_default = 0.95
 
 def calib_err(confidence, correct, p='2', beta=100):
@@ -199,4 +200,4 @@ def get_and_print_results(out_score, in_score, num_to_avg=1):
     #    print_measures_with_std(aurocs, auprs, fprs, method_name='Ours')
     #else:
     #    print_measures(auroc, aupr, fpr, method_name='Ours')
-    return auroc, aupr, fpr 
+    return auroc, aupr, fpr
