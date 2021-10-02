@@ -43,17 +43,17 @@ noes = dset.ImageFolder(root=PATH_TO_IMAGENET_O, transform=test_transform)
 noe_loader = torch.utils.data.DataLoader(noes, batch_size=64, shuffle=False,
                                          num_workers=4, pin_memory=True)
 
-imagenet_o_folder = "imagenet_val_for_imagenet_o_ood/"
+imagenet_o_folder = "/scratch/ssd002/datasets/imagenet-o"
 
-def create_symlinks_to_imagenet(imagenet_folder, folder_to_scan):
-    if not os.path.exists(imagenet_folder):
-        os.makedirs(imagenet_folder)
-        folders_of_interest = os.listdir(folder_to_scan)
-        path_prefix = PATH_TO_IMAGENET_VAL
-        for folder in folders_of_interest:
-            os.symlink(path_prefix + folder, imagenet_folder+folder, target_is_directory=True)
-
-create_symlinks_to_imagenet(imagenet_o_folder, PATH_TO_IMAGENET_O)
+# def create_symlinks_to_imagenet(imagenet_folder, folder_to_scan):
+#     if not os.path.exists(imagenet_folder):
+#         os.makedirs(imagenet_folder)
+#         folders_of_interest = os.listdir(folder_to_scan)
+#         path_prefix = PATH_TO_IMAGENET_VAL
+#         for folder in folders_of_interest:
+#             os.symlink(path_prefix + folder, imagenet_folder+folder, target_is_directory=True)
+#
+# create_symlinks_to_imagenet(imagenet_o_folder, PATH_TO_IMAGENET_O)
 
 val_examples_imagenet_o = dset.ImageFolder(root=imagenet_o_folder, transform=test_transform)
 val_loader_imagenet_o = torch.utils.data.DataLoader(val_examples_imagenet_o, batch_size=128, shuffle=False,
