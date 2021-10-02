@@ -19,10 +19,9 @@ from copy import copy
 from tqdm import tqdm
 
 
-PATH_TO_IMAGENET_A = "./imagenet-a"
-PATH_TO_IMAGENET_O = "./imagenet-o"
-PATH_TO_IMAGENET_VAL = "./imagenet1k/val/"
-TORCH_HOME_DIR = "~/.models/"
+PATH_TO_IMAGENET_A = "/scratch/ssd002/datasets/imagenet-a"
+PATH_TO_IMAGENET_O = "/scratch/ssd002/datasets/imagenet-o"
+PATH_TO_IMAGENET_VAL = "/scratch/ssd002/datasets/imagenet/val"
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -55,7 +54,7 @@ def create_symlinks_to_imagenet(imagenet_folder, folder_to_scan):
     if not os.path.exists(imagenet_folder):
         os.makedirs(imagenet_folder)
         folders_of_interest = os.listdir(folder_to_scan)
-        path_prefix = PATH_TO_IMAGENET_VAL 
+        path_prefix = PATH_TO_IMAGENET_VAL
         for folder in folders_of_interest:
             os.symlink(path_prefix + folder, imagenet_folder+folder, target_is_directory=True)
 
@@ -115,52 +114,11 @@ def get_imagenet_o_results(in_loader, out_loader, net, mask):
     # acc = num_correct_out / len(nae_loader.dataset)
     # print('Out Dist Accuracy (%):', round(100*acc, 4))
 
-os.environ["TORCH_HOME"] = TORCH_HOME_DIR
-#print(os.environ["TORCH_HOME"])
-torch.hub.set_dir(TORCH_HOME_DIR)
-models_to_test = [
-    ("pytorch/vision", "alexnet"),
-    ("pytorch/vision", "squeezenet1_1"),
-    ("pytorch/vision", "vgg16"),
-    ("pytorch/vision", "vgg19"),
-    ('pytorch/vision', "vgg19_bn"),
-    ('pytorch/vision', "densenet121"),
-    ('pytorch/vision', "resnet50"),
-    ('pytorch/vision', "resnet101"),
-    ('pytorch/vision', "resnet152"),
-    ('pytorch/vision', "wide_resnet50_2"),
-    ('pytorch/vision', "resnext101_32x8d"),
-    ('pytorch/vision', "resnext50_32x4d"),
-    ('facebookresearch/WSL-Images', "resnext101_32x8d_wsl"),
-    ('facebookresearch/WSL-Images', "resnext101_32x16d_wsl"),
-    ('facebookresearch/WSL-Images', "resnext101_32x32d_wsl"),
-    ("pretrained", "dpn68"),
-    ("pretrained", "dpn98"),
-    ("pretrained", "se_resnet101"),
-    ("pretrained", "se_resnet152"),
-    ("pretrained", "resnext101_32x4d"),
-    ("pretrained", "se_resnext101_32x4d"),
-    ("facebookresearch/deit:main", "deit_base_patch16_224"),
-    ("facebookresearch/deit:main", "deit_small_patch16_224"),
-    ("facebookresearch/deit:main", "deit_tiny_patch16_224"),
-]
-
-
-
-for net_params in models_to_test:
-    if net_params[0] == "pytorch/vision":
-        net = torch.hub.load(net_params[0], net_params[1], pretrained=True)
-    elif "facebookresearch/deit" in net_params[0]:
-        net = torch.hub.load(net_params[0], net_params[1], pretrained=True)
-    elif net_params[0] == "pretrained":
-        net = pretrainedmodels.__dict__[net_params[1]](num_classes=1000, pretrained='imagenet')
-    else:
-        net = torch.hub.load(net_params[0], net_params[1])
-    print(net_params[1], '\n')
+if __name__ == '__main__':
+    net = models.resnet18(pretrained=True)
     net.cuda()
     net.eval()
-    
-    
+
     print("ImageNet-A Results")
     get_imagenet_a_results(nae_loader, net=net, mask=imagenet_a_mask)
     print("\n")
