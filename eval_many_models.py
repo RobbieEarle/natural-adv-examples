@@ -1,7 +1,6 @@
 import calibration_tools
 import numpy as np
 import os
-import pretrainedmodels
 import torch
 import torch.nn as nn
 import torchvision.datasets as dset
@@ -10,10 +9,6 @@ import torchvision.transforms.functional as trnF
 import torchvision.models as models
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
-
-# timm is needed for deit models
-import timm
-assert timm.__version__ == "0.3.2"
 
 from copy import copy
 from tqdm import tqdm
