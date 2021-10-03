@@ -34,36 +34,6 @@ imagenet_o_wnids = ['n01443537', 'n01704323', 'n01770081', 'n01784675', 'n018193
 
 imagenet_o_mask = [wnid in set(imagenet_o_wnids) for wnid in all_wnids]
 
-
-naes = dset.ImageFolder(root=PATH_TO_IMAGENET_A, transform=test_transform)
-nae_loader = torch.utils.data.DataLoader(naes, batch_size=64, shuffle=False,
-                                         num_workers=4, pin_memory=True)
-
-noes = dset.ImageFolder(root=PATH_TO_IMAGENET_O, transform=test_transform)
-noe_loader = torch.utils.data.DataLoader(noes, batch_size=64, shuffle=False,
-                                         num_workers=4, pin_memory=True)
-
-imagenet_o_folder = "/scratch/ssd002/datasets/imagenet-o"
-
-# def create_symlinks_to_imagenet(imagenet_folder, folder_to_scan):
-#     if not os.path.exists(imagenet_folder):
-#         os.makedirs(imagenet_folder)
-#         folders_of_interest = os.listdir(folder_to_scan)
-#         path_prefix = PATH_TO_IMAGENET_VAL
-#         for folder in folders_of_interest:
-#             os.symlink(path_prefix + folder, imagenet_folder+folder, target_is_directory=True)
-#
-# create_symlinks_to_imagenet(imagenet_o_folder, PATH_TO_IMAGENET_O)
-
-val_examples_imagenet_o = dset.ImageFolder(root=imagenet_o_folder, transform=test_transform)
-val_loader_imagenet_o = torch.utils.data.DataLoader(val_examples_imagenet_o, batch_size=128, shuffle=False,
-                                         num_workers=4, pin_memory=True)
-
-val_imagenet = dset.ImageFolder(root=PATH_TO_IMAGENET_VAL, transform=test_transform)
-val_imagenet_loader = torch.utils.data.DataLoader(val_imagenet, batch_size=128, shuffle=False,
-                                         num_workers=4, pin_memory=True)
-
-
 concat = lambda x: np.concatenate(x, axis=0)
 to_np = lambda x: x.data.to('cpu').numpy()
 
@@ -106,13 +76,30 @@ def get_imagenet_o_results(in_loader, out_loader, net, mask):
 
     calibration_tools.print_measures_old(aurocs, auprs, fprs, method_name='MSP')
 
-    # acc = num_correct_out / len(nae_loader.dataset)
-    # print('Out Dist Accuracy (%):', round(100*acc, 4))
 
-if __name__ == '__main__':
-    net = models.resnet18(pretrained=True)
+def eval_model(net, batch_size=64, seed=0):
     net.cuda()
     net.eval()
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    torch.cuda.manual_seed(seed)
+
+    naes = dset.ImageFolder(root=PATH_TO_IMAGENET_A, transform=test_transform)
+    nae_loader = torch.utils.data.DataLoader(naes, batch_size=batch_size, shuffle=False,
+                                             num_workers=4, pin_memory=True)
+
+    noes = dset.ImageFolder(root=PATH_TO_IMAGENET_O, transform=test_transform)
+    noe_loader = torch.utils.data.DataLoader(noes, batch_size=batch_size, shuffle=False,
+                                             num_workers=4, pin_memory=True)
+
+    val_examples_imagenet_o = dset.ImageFolder(root=PATH_TO_IMAGENET_O, transform=test_transform)
+    val_loader_imagenet_o = torch.utils.data.DataLoader(val_examples_imagenet_o, batch_size=batch_size, shuffle=False,
+                                             num_workers=4, pin_memory=True)
+
+    val_imagenet = dset.ImageFolder(root=PATH_TO_IMAGENET_VAL, transform=test_transform)
+    val_imagenet_loader = torch.utils.data.DataLoader(val_imagenet, batch_size=batch_size, shuffle=False,
+                                             num_workers=4, pin_memory=True)
 
     print("ImageNet-A Results")
     get_imagenet_a_results(nae_loader, net=net, mask=imagenet_a_mask)
@@ -121,3 +108,7 @@ if __name__ == '__main__':
     get_imagenet_o_results(val_loader_imagenet_o, noe_loader, net=net, mask=imagenet_o_mask)
 
     print("\n\n\n")
+
+if __name__ == '__main__':
+    net = models.resnet18(pretrained=True)
+    eval_model(net)
